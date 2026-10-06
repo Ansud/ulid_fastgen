@@ -1,0 +1,17 @@
+IndentWidth: 4
+TabWidth: 4
+AlignAfterOpenBracket: true
+AlignArrayOfStructures: Left
+AlignConsecutiveAssignments: AcrossEmptyLines
+AlignConsecutiveBitFields: AcrossEmptyLines
+AlignConsecutiveMacros:  AcrossEmptyLines
+AlignEscapedNewlines: LeftWithLastLine
+AlignOperands:  true
+AlignTrailingComments: Always
+AllowAllArgumentsOnNextLine: true
+AllowShortBlocksOnASingleLine: Empty
+AllowShortFunctionsOnASingleLine: Empty
+BreakBeforeBraces: Linux
+ColumnLimit: 120
+SortIncludes: false
+UseTab: Always
