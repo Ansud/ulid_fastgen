@@ -1,5 +1,13 @@
 cmake_minimum_required(VERSION 3.23)
 
+# Guard trash files with understandable message
+if(CMAKE_SOURCE_DIR STREQUAL CMAKE_BINARY_DIR)
+    message(FATAL_ERROR "In-source builds are not allowed. Use: cmake -B build")
+endif()
+
+# Do not leave trash in sources please (check guard with message above)
+set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
+set(CMAKE_DISABLE_SOURCE_CHANGES ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON CACHE BOOL "Generate compile_commands.json")
 
 project(ulid_fastgen
@@ -8,7 +16,6 @@ project(ulid_fastgen
         LANGUAGES C CXX)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
-
 include(utils)
 include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
@@ -30,6 +37,8 @@ if (NOT is_multi_config AND NOT CMAKE_BUILD_TYPE)
     set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS Debug Release)
 endif ()
 
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+
 set(ULID_FASTGEN_ASAN_FLAGS -fsanitize=address,undefined -fno-omit-frame-pointer -g)
 set(ULID_FASTGEN_TSAN_FLAGS -fsanitize=thread -fno-omit-frame-pointer -g)
 
@@ -50,9 +59,10 @@ set(public_headers
 
 set(sources
         ${public_headers}
-        src/random.h
-        src/random.c
-        src/ulid_generator.c
+        src/core/random.h
+        src/core/random.c
+        src/core/ulid_generator.c
+        src/wrapper/generic.c
 )
 
 source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" FILES ${sources})
@@ -114,11 +124,3 @@ if (FULID_INSTALL)
             DESTINATION "${config_install_dir}")
 endif ()
 
-if (is_top_level AND CMAKE_EXPORT_COMPILE_COMMANDS)
-    add_custom_target(ulid_fastgen_compile_commands ALL
-            COMMAND "${CMAKE_COMMAND}" -E create_symlink
-            "${CMAKE_BINARY_DIR}/compile_commands.json"
-            "${CMAKE_SOURCE_DIR}/compile_commands.json"
-            COMMENT "Linking compile_commands.json into the source tree"
-            VERBATIM)
-endif ()

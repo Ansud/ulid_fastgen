@@ -19,18 +19,26 @@ TEST(GenericTests, MonotonicIncreaseBatch)
 	EXPECT_TRUE(ulids != nullptr);
 
 	for (int i = 0; i < BATCH_COUNT; i++) {
-		EXPECT_TRUE(ulid_generate(ulids, 0, GEN_COUNT) == GEN_COUNT);
+		EXPECT_TRUE(ulid_generate_simple(ulids, GEN_COUNT) == GEN_COUNT);
 
 		for (int j = 0; j < GEN_COUNT; j++) {
 			result.emplace_back(Ulid(ulids[j]));
 		}
 	}
 
-	Ulid previous = *result.begin();
+	Ulid previous	 = *result.begin();
+	int found_zeroes = 0;
 
 	for (auto current = result.begin() + 1; current != result.end(); current++) {
 		EXPECT_TRUE(previous < *current);
+
+		if (current->get_node() == 0 && current->get_shard() == 0) {
+			found_zeroes++;
+		}
 	}
+
+	// I think this variable is enough to prevent test be flaky (in reality no one or one may be zero)
+	EXPECT_TRUE(found_zeroes < 3);
 }
 
 TEST(GenericTests, MonotonicIncrease)
@@ -56,8 +64,20 @@ TEST(GenericTests, NodePassed)
 
 	for (int i = 0; i <= 0xFFFF; i++) {
 		uint16_t node = (uint16_t)i;
-		auto current  = Ulid(node);
+		auto current  = Ulid(node, 0);
 
 		EXPECT_TRUE(current.get_node() == node);
+	}
+}
+
+TEST(GenericTests, ShardPassed)
+{
+	std::cout << "Test shard passing to generator." << std::endl;
+
+	for (int i = 0; i <= 0xFF; i++) {
+		uint8_t shard = (uint8_t)i;
+		auto current  = Ulid(0, shard);
+
+		EXPECT_TRUE(current.get_shard() == shard);
 	}
 }

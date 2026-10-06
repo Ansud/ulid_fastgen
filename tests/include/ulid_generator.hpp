@@ -18,12 +18,14 @@ class Ulid
   public:
 	explicit Ulid()
 	{
-		_ulid = {0};
+		if (ulid_generate_simple(&_ulid, 1) != 1) {
+			throw std::runtime_error("ulid_generate_one unexpectedly failed");
+		}
 	}
 
-	explicit Ulid(uint16_t node = 0)
+	explicit Ulid(uint16_t node, uint8_t shard)
 	{
-		if (ulid_generate_one(&_ulid, node) != 1) {
+		if (ulid_generate(&_ulid, 1, node, shard) != 1) {
 			throw std::runtime_error("ulid_generate_one unexpectedly failed");
 		}
 	}
@@ -34,6 +36,7 @@ class Ulid
 	}
 
 	Ulid(const Ulid &other)			   = default;
+
 	Ulid &operator=(const Ulid &other) = default;
 	Ulid(Ulid &&other)				   = default;
 	Ulid &operator=(Ulid &&other)	   = default;
@@ -86,11 +89,16 @@ class Ulid
 	uint16_t get_node()
 	{
 		// The raw values is swapped in case of endianess
-		uint16_t node = _ulid.b >> 48;
+		uint16_t node = (_ulid.b >> 40) & 0xFFFF;
 		return ((node & 0xFF) << 8) | (node >> 8);
 	}
 
-	static std::vector<Ulid> generate_batch(uint16_t count, uint16_t node = 0)
+	uint8_t get_shard()
+	{
+		return (uint8_t)((_ulid.b >> 56) & 0xFF);
+	}
+
+	static std::vector<Ulid> generate_batch(uint16_t count)
 	{
 		// Not a very clever way, we have batch generator. But it produces raw ulids, not objects.
 		// And i'm too lazy to copy from one buffer to other
@@ -98,7 +106,7 @@ class Ulid
 
 		for (int i = 0; i < count; i++) {
 			try {
-				batch.emplace_back(Ulid(node));
+				batch.emplace_back(Ulid());
 			} catch (...) {
 				return std::vector<Ulid>();
 			}

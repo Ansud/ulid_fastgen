@@ -1,11 +1,10 @@
 #include <stdint.h>
 #include <stdalign.h>
-
-#include "random.h"
-
 #include <stdatomic.h>
 #include <stdio.h>
 #include <stdlib.h>
+
+#include "random.h"
 
 // Align to the cache line, otherwise it can be interconnected with
 // another global state and it will be painful
@@ -28,7 +27,7 @@ static uint64_t get_cpu_counter(void)
 #endif
 }
 
-static uint32_t xorshift(uint32_t value)
+uint32_t xorshift_round(uint32_t value)
 {
 	value ^= value << 13;
 	value ^= value >> 17;
@@ -54,7 +53,7 @@ uint32_t get_random_32(void)
 		new_state = 0x22021980;
 	}
 
-	new_state = xorshift(new_state);
+	new_state = xorshift_round(new_state);
 
 	// If one of the threads destroy state - it is ok, random variations will be still random
 	// But we need to set the state atomically
@@ -78,7 +77,7 @@ uint16_t get_nonzero_random_16(uint32_t *state)
 	}
 #endif
 
-	const uint32_t new_state = xorshift(*state);
+	const uint32_t new_state = xorshift_round(*state);
 	*state					 = new_state;
 
 	// Wrap to 16 bits
