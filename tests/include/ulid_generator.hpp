@@ -1,19 +1,17 @@
 #ifndef UUIDLIKE_FASTGEN_ULID_GENERATOR_HPP
 #define UUIDLIKE_FASTGEN_ULID_GENERATOR_HPP
 
-// This is C++ wrapper of the generator
+// This is C++ wrapper of the generator, i used it for tests only NOW.
 #ifdef __cplusplus
-#include <stdint.h>
-#include <stdint.h>
-#include <stdint.h>
-#include <stdint.h>
 #include <stdint.h>
 #include <sstream>
 #include <iomanip>
 #include <string>
 #include <stdexcept>
+#include <vector>
+#include <cstring>
 
-#include "ulid_generator.h"
+#include <ulid_generator.h>
 
 class Ulid
 {
@@ -99,7 +97,11 @@ class Ulid
 		std::vector<Ulid> batch;
 
 		for (int i = 0; i < count; i++) {
-			batch.emplace_back(Ulid(node));
+			try {
+				batch.emplace_back(Ulid(node));
+			} catch (...) {
+				return std::vector<Ulid>();
+			}
 		}
 
 		return batch;
