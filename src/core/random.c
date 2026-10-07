@@ -70,7 +70,7 @@ uint16_t get_nonzero_random_16(uint32_t *state)
 	//
 	// And please note - NO ANY POINTER CHECKS IN RELEASE, BE CAREFUL
 	//
-#ifdef DEBUG
+#ifdef ULID_FASTGEN_DEBUG
 	if (state == NULL) {
 		fputs("get_nonzero_random_8: NULL state", stderr);
 		abort();

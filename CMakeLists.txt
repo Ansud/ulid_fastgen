@@ -16,7 +16,9 @@ project(ulid_fastgen
         LANGUAGES C CXX)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+
 include(utils)
+include(check_mcx)
 include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
 
@@ -37,8 +39,6 @@ if (NOT is_multi_config AND NOT CMAKE_BUILD_TYPE)
     set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS Debug Release)
 endif ()
 
-set(CMAKE_POSITION_INDEPENDENT_CODE ON)
-
 set(ULID_FASTGEN_ASAN_FLAGS -fsanitize=address,undefined -fno-omit-frame-pointer -g)
 set(ULID_FASTGEN_TSAN_FLAGS -fsanitize=thread -fno-omit-frame-pointer -g)
 
@@ -52,6 +52,9 @@ elseif (FULID_BUILD_TESTS_TSAN)
     add_compile_options(${ULID_FASTGEN_TSAN_FLAGS})
     add_link_options(${ULID_FASTGEN_TSAN_FLAGS})
 endif ()
+
+# Need to be sure that cmpxchg16 is native
+check_cmpxchg16_flag_needed()
 
 set(public_headers
         include/ulid_generator.h
@@ -69,6 +72,11 @@ source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" FILES ${sources})
 
 add_library(ulid_fastgen ${sources})
 add_library(ulid_fastgen::ulid_fastgen ALIAS ulid_fastgen)
+
+target_compile_definitions(ulid_fastgen PRIVATE
+        $<$<OR:$<CONFIG:Debug>,$<BOOL:${FULID_BUILD_TESTS}>,$<BOOL:${FULID_BUILD_TESTS_TSAN}>>:ULID_FASTGEN_DEBUG>)
+
+target_compile_options(ulid_fastgen PRIVATE ${ULID_FASTGEN_CX16_FLAG})
 
 # The lib must use C17 because of _Atomic and friends
 target_compile_features(ulid_fastgen PUBLIC c_std_17)

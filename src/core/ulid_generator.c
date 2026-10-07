@@ -37,7 +37,7 @@ int32_t ulid_generate_core(ulid_aligned_state_t *atomic_storage, ulid_t *out_buf
 	const uint64_t timestamp = get_ms_timestamp();
 
 	if (!timestamp) {
-#ifdef DEBUG
+#ifdef ULID_FASTGEN_DEBUG
 		// Panic is good idea in debug mode, otherwise - sorry :)
 		fputs("get_ms_timestamp failed to return value, can not continue\n", stderr);
 		abort();
@@ -83,7 +83,7 @@ int32_t ulid_generate_core(ulid_aligned_state_t *atomic_storage, ulid_t *out_buf
 			// We can survive ~4 seconds.
 			// btw, last 16 bits is random, clean them and do not check of course
 			if (diff & 0xFFFFFFFFF0000000) {
-#ifdef DEBUG
+#ifdef ULID_FASTGEN_DEBUG
 				// No way to continue. Sorry.
 				fprintf(stderr, "Oops: time drift is too large in the past. [0x%016llx]\n", diff);
 				abort();
