@@ -36,7 +36,7 @@ typedef struct _ulid_t {
 
 typedef struct _ulid_aligned_state_t {
 	alignas(64)
-#ifdef __clang__
+#ifndef __cplusplus
 		_Atomic
 #endif
 		ulid_t f;
