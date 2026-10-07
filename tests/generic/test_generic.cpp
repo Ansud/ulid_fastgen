@@ -14,9 +14,7 @@
 TEST(GenericTests, MonotonicIncreaseBatch)
 {
 	std::vector<Ulid> result;
-	ulid_t *ulids = (ulid_t *)malloc(sizeof(ulid_t) * GEN_COUNT);
-
-	EXPECT_TRUE(ulids != nullptr);
+	ulid_t ulids[GEN_COUNT];
 
 	for (int i = 0; i < BATCH_COUNT; i++) {
 		EXPECT_TRUE(ulid_generate_simple(ulids, GEN_COUNT) == GEN_COUNT);

@@ -5,14 +5,20 @@ function(__execute_compilation_cx16)
     set(cx16_probe_code [[
         #include <stdatomic.h>
 
-        typedef struct {
-            unsigned long long a, b;
-        } _ulid_probe_t;
+        #if defined(__GNUC__) && !defined(__clang__)
+            #ifndef __GCC_HAVE_SYNC_COMPARE_AND_SWAP_16
+                #error "128-bit CAS is not lock-free on this target in GCC"
+            #endif
+        #else
+            typedef struct {
+                unsigned long long a, b;
+            } _ulid_probe_t;
 
-        _Static_assert(
-            __atomic_always_lock_free(sizeof(_ulid_probe_t), 0),
-           "128-bit atomics are not lock free on this target"
-        );
+            _Static_assert(
+                __atomic_always_lock_free(sizeof(_ulid_probe_t), 0),
+               "128-bit atomics are not lock free on this target"
+            );
+        #endif
 
         int main(void) { return 0; }
     ]])

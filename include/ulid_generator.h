@@ -35,7 +35,11 @@ typedef struct _ulid_t {
 } ulid_t;
 
 typedef struct _ulid_aligned_state_t {
-	alignas(64) _Atomic ulid_t f;
+	alignas(64)
+#ifdef __clang__
+		_Atomic
+#endif
+		ulid_t f;
 } ulid_aligned_state_t;
 
 typedef enum _ulid_errors {
